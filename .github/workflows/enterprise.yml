@@ -18,7 +18,8 @@ jobs:
  
     # CI Step: Build for Feature Branch
     - name: Get commit message
-      run: echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
+      run: |
+        echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
  
     - name: Display commit message
       run: cat commit_message.txt
