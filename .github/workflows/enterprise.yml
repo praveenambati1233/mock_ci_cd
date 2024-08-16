@@ -1,0 +1,98 @@
+name: CI/CD
+ 
+on:
+  push:
+    branches:
+      - 'feature/*'
+  pull_request:
+    branches:
+      - 'release/*'
+ 
+jobs:
+  build-and-deploy-feature:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    # CI Step: Build for Feature Branch
+    - name: Get commit message
+      run: echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
+ 
+    - name: Display commit message
+      run: cat commit_message.txt
+ 
+    - name: Create build artifact
+      run: |
+        echo "Mock build complete."
+        mv commit_message.txt file_build.txt
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: file_build.txt
+ 
+    # CD Step: Deploy for Feature Branch
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: .
+ 
+    - name: Rename build artifact
+      run: mv file_build.txt file_deploy.txt
+ 
+    - name: Upload deploy artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deploy
+        path: file_deploy.txt
+ 
+  build-release:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    # CI Step: Build for Release Branch PR
+    - name: Get commit message
+      run: |
+        echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
+ 
+    - name: Display commit message
+      run: cat commit_message.txt
+ 
+    - name: Create build artifact
+      run: |
+        echo "Mock build complete."
+        mv commit_message.txt file_build.txt
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: file_build.txt
+ 
+  deploy-release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    # CD Step: Deploy After PR is Merged
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: .
+ 
+    - name: Rename build artifact
+      run: mv file_build.txt file_deploy.txt
+ 
+    - name: Upload deploy artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deploy
+        path: file_deploy.txt
