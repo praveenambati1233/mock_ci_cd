@@ -1,0 +1,46 @@
+name: CI/CD
+ 
+on:
+  push:
+    branches:
+      - 'feature/*'
+ 
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    # CI Step: Mock Build
+    - name: Get commit message
+      run: echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
+ 
+    - name: Display commit message
+      run: cat commit_message.txt
+ 
+    - name: Create build artifact
+      run: |
+        echo "Mock build complete."
+        mv commit_message.txt file_build.txt
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: file_build.txt
+ 
+    # CD Step: Deploy
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: .
+ 
+    - name: Rename build artifact
+      run: mv file_build.txt file_deploy.txt
+ 
+    - name: Upload deploy artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deploy
+        path: file_deploy.txt
