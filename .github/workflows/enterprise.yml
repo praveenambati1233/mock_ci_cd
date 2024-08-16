@@ -5,14 +5,14 @@ on:
     branches:
       - 'feature/*'
   pull_request:
-    types: [closed]
+    types: [opened, synchronize, reopened, closed]
     branches:
       - 'release/*'
  
 jobs:
   build:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request == true)
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/') || github.event_name == 'pull_request' && github.event.action != 'closed' && github.base_ref == 'release/*' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -36,9 +36,9 @@ jobs:
         path: file_build.txt
  
   deploy:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request == true)
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/') || github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'release/*' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
