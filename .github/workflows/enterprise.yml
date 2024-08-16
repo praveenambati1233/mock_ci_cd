@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - 'feature/*'
+      - 'release/*'
   pull_request:
     branches:
       - 'release/*'
  
 jobs:
   build-and-deploy-feature:
-    if: github.event_name == 'push'
+    if: github.ref.startsWith('refs/heads/feature/')
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -59,8 +60,7 @@ jobs:
  
     # CI Step: Build for Release Branch PR
     - name: Get commit message
-      run: |
-        echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
+      run: echo "Commit message: $(git log -1 --pretty=%B)" > commit_message.txt
  
     - name: Display commit message
       run: cat commit_message.txt
@@ -76,7 +76,8 @@ jobs:
         path: file_build.txt
  
   deploy-release:
-    if: github.event.pull_request.merged == true
+    if: github.ref.startsWith('refs/heads/release/')
+    needs: build-release
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
